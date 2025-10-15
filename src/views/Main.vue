@@ -1,4 +1,6 @@
-<script setup></script>
+<script setup>
+import CommonAside from '@/components/commonAside.vue'
+</script>
 
 <template>
   <div class="common-layout">
