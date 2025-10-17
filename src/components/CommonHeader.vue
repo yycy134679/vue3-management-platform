@@ -32,7 +32,7 @@ const store = useAllDataStore()
 const getImageUrl = (imageName) => {
   // 特殊处理用户头像
   if (imageName === 'user') {
-    return new URL(`../assets/images/avatar.jpg`, import.meta.url).href
+    return new URL(`../assets/images/user.png`, import.meta.url).href
   }
   // 其他图片按原逻辑处理
   return new URL(`../assets/${imageName}.png`, import.meta.url).href

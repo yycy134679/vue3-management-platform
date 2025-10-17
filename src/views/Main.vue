@@ -1,6 +1,7 @@
 <script setup>
 import CommonAside from '@/components/CommonAside.vue'
 import CommonHeader from '@/components/CommonHeader.vue'
+import { RouterView } from 'vue-router'
 </script>
 
 <template>
@@ -12,7 +13,9 @@ import CommonHeader from '@/components/CommonHeader.vue'
         <el-header class="el-header">
           <common-header />
         </el-header>
-        <el-main class="right-main"> main </el-main>
+        <el-main class="right-main">
+          <RouterView />
+        </el-main>
       </el-container>
     </el-container>
   </div>
