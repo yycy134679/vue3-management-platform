@@ -1,7 +1,7 @@
 <template>
   <div class="header">
     <div class="l-content">
-      <el-button size="small">
+      <el-button @click="handleCollapse" size="small">
         <component class="icons" is="menu"></component>
       </el-button>
       <el-breadcrumb separator="/" class="bread">
@@ -26,7 +26,9 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import { useAllDataStore } from '@/stores'
 
+const store = useAllDataStore()
 const getImageUrl = (imageName) => {
   // 特殊处理用户头像
   if (imageName === 'user') {
@@ -34,6 +36,10 @@ const getImageUrl = (imageName) => {
   }
   // 其他图片按原逻辑处理
   return new URL(`../assets/${imageName}.png`, import.meta.url).href
+}
+
+const handleCollapse = () => {
+  store.state.isCollapse = !store.state.isCollapse
 }
 </script>
 

@@ -1,14 +1,16 @@
 <template>
-  <el-aside width="200px" class="common-aside">
-    <h3 class="aside-title">通用后台管理系统</h3>
+  <el-aside :width="width" class="common-aside">
     <el-menu
       default-active="1"
       class="el-menu-vertical"
       background-color="#545c64"
       text-color="#ffffff"
       active-text-color="#ffd04b"
-      :collapse="false"
+      :collapse="isCollapse"
     >
+      <h3 class="aside-title" v-show="!isCollapse">通用后台管理系统</h3>
+      <h3 class="aside-title" v-show="isCollapse">后台</h3>
+
       <!-- 无子菜单项 -->
       <el-menu-item v-for="item in noChildren" :key="item.name" :index="item.name">
         <el-icon>
@@ -36,6 +38,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { HomeFilled, ShoppingBag, User, Location } from '@element-plus/icons-vue'
+import { useAllDataStore } from '@/stores'
 
 // 菜单列表数据
 const list = ref([
@@ -82,7 +85,9 @@ const list = ref([
   },
 ])
 
-// 计算属性：过滤出没有子菜单的项
+const store = useAllDataStore()
+const isCollapse = computed(() => store.state.isCollapse)
+// 计算属性:过滤出没有子菜单的项
 const noChildren = computed(() => {
   return list.value.filter((item) => !item.children)
 })
@@ -91,6 +96,8 @@ const noChildren = computed(() => {
 const hasChildren = computed(() => {
   return list.value.filter((item) => item.children)
 })
+
+const width = computed(() => (isCollapse.value ? '64px' : '180px'))
 </script>
 
 <style scoped>
