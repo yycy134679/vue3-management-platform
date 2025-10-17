@@ -104,6 +104,7 @@ const width = computed(() => (isCollapse.value ? '64px' : '180px'))
 .common-aside {
   background-color: #545c64;
   height: 100vh;
+  transition: width 0.3s ease;
 }
 
 .aside-title {
@@ -114,21 +115,30 @@ const width = computed(() => (isCollapse.value ? '64px' : '180px'))
   font-weight: 400;
   margin: 0;
   padding: 20px 0;
+  transition: opacity 0.2s ease;
 }
 
 .el-menu-vertical {
   border-right: none;
+  transition: width 0.3s ease;
 }
 
 .el-menu-item,
 :deep(.el-sub-menu__title) {
   height: 56px;
   line-height: 56px;
+  transition: all 0.3s ease;
 }
 
 .el-menu-item .el-icon,
 :deep(.el-sub-menu__title .el-icon) {
   font-size: 18px;
   margin-right: 8px;
+  transition: margin 0.3s ease;
+}
+
+.el-menu-item span,
+:deep(.el-sub-menu__title span) {
+  transition: opacity 0.2s ease;
 }
 </style>
