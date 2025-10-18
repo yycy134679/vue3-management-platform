@@ -26,27 +26,35 @@
         <div class="table-header">
           <h3 class="table-title">课程购买统计</h3>
         </div>
-        <el-table :data="tableData" stripe :header-cell-style="headerCellStyle">
-          <el-table-column
-            v-for="(val, key) in tableLabel"
-            :key="key"
-            :label="val"
-            :prop="key"
-            align="center"
-          ></el-table-column>
-        </el-table>
+        <div class="table-wrapper">
+          <el-table
+            :data="tableData"
+            stripe
+            :header-cell-style="headerCellStyle"
+            style="width: 100%"
+          >
+            <el-table-column
+              v-for="(val, key) in tableLabel"
+              :key="key"
+              :label="val"
+              :prop="key"
+              align="center"
+            ></el-table-column>
+          </el-table>
+        </div>
       </el-card>
     </el-col>
   </el-row>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, getCurrentInstance } from 'vue'
 
-const getImageUrl = (user) => {
-  return new URL(`../assets/images/${user}.png`, import.meta.url).href
-}
+// 数据
 
+const { proxy } = getCurrentInstance()
+
+// 表格数据
 const tableData = ref([
   {
     name: 'Java',
@@ -62,6 +70,7 @@ const tableData = ref([
   },
 ])
 
+// 表格列标签
 const tableLabel = ref({
   name: '课程',
   todayBuy: '今日购买',
@@ -76,6 +85,23 @@ const headerCellStyle = {
   fontWeight: '600',
   fontSize: '14px',
 }
+
+// 方法
+
+// 获取图片路径
+const getImageUrl = (user) => {
+  return new URL(`../assets/images/${user}.png`, import.meta.url).href
+}
+
+const getTableData = async () => {
+  const data = await proxy.$api.home.getTableData()
+  console.log('获取到的表格数据:', data) // 调试日志
+  tableData.value = data.tableData
+}
+
+onMounted(() => {
+  getTableData()
+})
 </script>
 
 <style scoped lang="less">
@@ -183,6 +209,31 @@ const headerCellStyle = {
       font-size: 16px;
       font-weight: 600;
       color: #303133;
+    }
+
+    /* 表格滚动容器 */
+    .table-wrapper {
+      max-height: 300px;
+      overflow-y: auto;
+      overflow-x: hidden;
+
+      /* 滚动条样式优化 */
+      &::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background-color: #dcdfe6;
+        border-radius: 3px;
+
+        &:hover {
+          background-color: #c0c4cc;
+        }
+      }
+
+      &::-webkit-scrollbar-track {
+        background-color: #f5f7fa;
+      }
     }
 
     /* 深度选择器：修改 Element Plus 表格内部样式 */
