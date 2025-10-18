@@ -9,7 +9,7 @@ export default {
     // 请求左侧表格的数据
     getTableData() {
       return request({
-        url: '/api/home/getTableData',
+        url: '/home/getTable',
         method: 'get',
       })
     },
