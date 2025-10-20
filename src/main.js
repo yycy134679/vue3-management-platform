@@ -7,7 +7,7 @@ import router from './router'
 // 全局样式
 import '@/assets/less/index.less'
 // Mock 数据（开发环境）
-// import '@/api/mock.js'
+import '@/api/mock.js'
 // API 管理对象
 import api from '@/api/api'
 

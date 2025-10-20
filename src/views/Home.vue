@@ -1,6 +1,7 @@
 <template>
   <el-row class="home" :gutter="20">
     <el-col :span="8" style="margin-top: 20px">
+      <!-- 用户信息卡片 -->
       <el-card class="user-card">
         <div class="user">
           <img :src="getImageUrl('user')" class="user-avatar" />
@@ -44,31 +45,38 @@
         </div>
       </el-card>
     </el-col>
+
+    <!-- 右侧统计卡片区域 -->
+    <el-col :span="16" style="margin-top: 20px">
+      <div class="count-data">
+        <el-card
+          v-for="item in countData"
+          :key="item.name"
+          :body-style="{ display: 'flex', padding: 0 }"
+          class="count-card"
+        >
+          <component :is="item.icon" class="count-icon" :style="{ backgroundColor: item.color }" />
+          <div class="count-detail">
+            <div class="count-value">¥ {{ item.value }}</div>
+            <div class="count-name">{{ item.name }}</div>
+          </div>
+        </el-card>
+      </div>
+    </el-col>
   </el-row>
 </template>
 
 <script setup>
 import { ref, onMounted, getCurrentInstance } from 'vue'
+import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 
 // 数据
 
 const { proxy } = getCurrentInstance()
 
 // 表格数据
-const tableData = ref([
-  {
-    name: 'Java',
-    todayBuy: 100,
-    monthBuy: 200,
-    totalBuy: 300,
-  },
-  {
-    name: 'Python',
-    todayBuy: 100,
-    monthBuy: 200,
-    totalBuy: 300,
-  },
-])
+const tableData = ref([])
+const countData = ref([])
 
 // 表格列标签
 const tableLabel = ref({
@@ -96,11 +104,18 @@ const getImageUrl = (user) => {
 const getTableData = async () => {
   const data = await proxy.$api.home.getTableData()
   console.log('获取到的表格数据:', data) // 调试日志
-  tableData.value = data.tableData
+  tableData.value = data.tableData || data
+}
+
+const getCountData = async () => {
+  const data = await proxy.$api.home.getCountData()
+  console.log('获取到的统计数据:', data) // 调试日志
+  countData.value = data
 }
 
 onMounted(() => {
   getTableData()
+  getCountData()
 })
 </script>
 
@@ -262,6 +277,66 @@ onMounted(() => {
       /* 斑马纹：奇偶行交替背景色 */
       .el-table__body tr.el-table__row--striped td {
         background-color: #fafafa;
+      }
+    }
+  }
+
+  /* 右侧统计卡片区域 */
+  .count-data {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px; // 卡片之间的间距
+
+    /* 单个统计卡片 */
+    .count-card {
+      width: calc(33.33% - 14px); // 每行3个卡片，减去间距
+      cursor: pointer;
+      transition: all 0.3s ease;
+
+      &:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      }
+
+      /* 卡片内容区域 */
+      :deep(.el-card__body) {
+        display: flex;
+        align-items: center;
+        padding: 0;
+      }
+
+      /* 统计图标 */
+      .count-icon {
+        width: 80px;
+        height: 80px;
+        font-size: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+      }
+
+      /* 统计详情 */
+      .count-detail {
+        flex: 1;
+        padding: 0 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+
+        /* 数值 */
+        .count-value {
+          font-size: 24px;
+          font-weight: 600;
+          color: #303133;
+          margin-bottom: 8px;
+        }
+
+        /* 名称 */
+        .count-name {
+          font-size: 13px;
+          color: #909399;
+        }
       }
     }
   }

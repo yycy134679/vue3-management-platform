@@ -19,5 +19,5 @@ export default {
   env,
   ...EnvConfig[env],
   // 全局是否开启 mock
-  mock: true,
+  mock: false,
 }
