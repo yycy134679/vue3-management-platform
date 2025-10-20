@@ -24,9 +24,9 @@
 
       <!-- 表格 -->
       <el-card shadow="hover" class="user-table">
-        <div class="table-header">
+        <!-- <div class="table-header">
           <h3 class="table-title">课程购买统计</h3>
-        </div>
+        </div> -->
         <div class="table-wrapper">
           <el-table
             :data="tableData"
@@ -70,6 +70,21 @@
         </div>
         <div ref="orderChartRef" class="chart-container"></div>
       </el-card>
+
+      <div class="graph">
+        <el-card shadow="hover" class="graph-card">
+          <div class="chart-header">
+            <h3 class="chart-title">用户统计</h3>
+          </div>
+          <div ref="userEchart" class="graph-chart-container"></div>
+        </el-card>
+        <el-card shadow="hover" class="graph-card">
+          <div class="chart-header">
+            <h3 class="chart-title">销售统计</h3>
+          </div>
+          <div ref="videoEchart" class="graph-chart-container"></div>
+        </el-card>
+      </div>
     </el-col>
   </el-row>
 </template>
@@ -122,6 +137,172 @@ const getCountData = async () => {
   const data = await proxy.$api.home.getCountData()
   console.log('获取到的统计数据:', data) // 调试日志
   countData.value = data
+}
+
+// 初始化用户统计柱状图
+const userEchart = ref(null)
+let userChart = null
+const initUserChart = async () => {
+  const chartData = await proxy.$api.home.getChartData()
+  console.log('获取到的用户数据:', chartData.userData)
+
+  await nextTick()
+
+  if (!userEchart.value) return
+
+  if (userChart) {
+    userChart.dispose()
+  }
+
+  userChart = echarts.init(userEchart.value)
+
+  const { userData } = chartData
+
+  const option = {
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: {
+        type: 'shadow',
+      },
+    },
+    legend: {
+      data: ['新增用户', '活跃用户'],
+      top: 0,
+      textStyle: {
+        fontSize: 12,
+      },
+    },
+    grid: {
+      left: '3%',
+      right: '4%',
+      bottom: '3%',
+      top: '40px',
+      containLabel: true,
+    },
+    xAxis: {
+      type: 'category',
+      data: userData.map((item) => item.date),
+      axisLabel: {
+        fontSize: 12,
+        color: '#606266',
+      },
+      axisLine: {
+        lineStyle: {
+          color: '#e4e7ed',
+        },
+      },
+    },
+    yAxis: {
+      type: 'value',
+      axisLabel: {
+        fontSize: 12,
+        color: '#606266',
+      },
+      splitLine: {
+        lineStyle: {
+          color: '#e4e7ed',
+          type: 'dashed',
+        },
+      },
+    },
+    series: [
+      {
+        name: '新增用户',
+        type: 'bar',
+        data: userData.map((item) => item.new),
+        itemStyle: {
+          color: '#5ab1ef',
+        },
+        barWidth: '35%',
+      },
+      {
+        name: '活跃用户',
+        type: 'bar',
+        data: userData.map((item) => item.active),
+        itemStyle: {
+          color: '#b6a2de',
+        },
+        barWidth: '35%',
+      },
+    ],
+  }
+
+  userChart.setOption(option)
+
+  window.addEventListener('resize', () => {
+    userChart?.resize()
+  })
+}
+
+// 初始化销售统计饼图
+const videoEchart = ref(null)
+let videoChart = null
+const initVideoChart = async () => {
+  const chartData = await proxy.$api.home.getChartData()
+  console.log('获取到的销售数据:', chartData.videoData)
+
+  await nextTick()
+
+  if (!videoEchart.value) return
+
+  if (videoChart) {
+    videoChart.dispose()
+  }
+
+  videoChart = echarts.init(videoEchart.value)
+
+  const { videoData } = chartData
+
+  const option = {
+    tooltip: {
+      trigger: 'item',
+      formatter: '{a} <br/>{b}: {c} ({d}%)',
+    },
+    legend: {
+      orient: 'vertical',
+      right: '10%',
+      top: 'center',
+      textStyle: {
+        fontSize: 12,
+      },
+    },
+    series: [
+      {
+        name: '销售统计',
+        type: 'pie',
+        radius: ['40%', '70%'],
+        center: ['35%', '50%'],
+        avoidLabelOverlap: false,
+        itemStyle: {
+          borderRadius: 4,
+          borderColor: '#fff',
+          borderWidth: 2,
+        },
+        label: {
+          show: false,
+          position: 'center',
+        },
+        emphasis: {
+          label: {
+            show: true,
+            fontSize: 16,
+            fontWeight: 'bold',
+          },
+        },
+        labelLine: {
+          show: false,
+        },
+        data: videoData,
+        color: ['#5ab1ef', '#e46674', '#b6a2de', '#8d98b3', '#ffb980', '#2ec7c9'],
+      },
+    ],
+  }
+
+  videoChart.setOption(option)
+
+  window.addEventListener('resize', () => {
+    videoChart?.resize()
+  })
 }
 
 // 初始化折线图
@@ -235,6 +416,8 @@ onMounted(() => {
   getTableData()
   getCountData()
   initOrderChart()
+  initUserChart()
+  initVideoChart()
 })
 </script>
 
@@ -404,16 +587,16 @@ onMounted(() => {
   .count-data {
     display: flex;
     flex-wrap: wrap;
-    gap: 20px; // 卡片之间的间距
+    gap: 12px; // 减少卡片之间的间距
 
     /* 单个统计卡片 */
     .count-card {
-      width: calc(33.33% - 14px); // 每行3个卡片,减去间距
+      width: calc(33.33% - 8px); // 每行3个卡片,减去间距
       cursor: pointer;
       transition: all 0.3s ease;
 
       &:hover {
-        transform: translateY(-4px);
+        transform: translateY(-2px);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
       }
 
@@ -426,9 +609,9 @@ onMounted(() => {
 
       /* 统计图标 */
       .count-icon {
-        width: 80px;
-        height: 80px;
-        font-size: 30px;
+        width: 60px; // 减小图标区域宽度
+        height: 60px; // 减小图标区域高度
+        font-size: 24px; // 减小图标字体
         display: flex;
         align-items: center;
         justify-content: center;
@@ -438,22 +621,22 @@ onMounted(() => {
       /* 统计详情 */
       .count-detail {
         flex: 1;
-        padding: 0 20px;
+        padding: 0 16px; // 减少内边距
         display: flex;
         flex-direction: column;
         justify-content: center;
 
         /* 数值 */
         .count-value {
-          font-size: 24px;
+          font-size: 20px; // 减小字体
           font-weight: 600;
           color: #303133;
-          margin-bottom: 8px;
+          margin-bottom: 4px; // 减少间距
         }
 
         /* 名称 */
         .count-name {
-          font-size: 13px;
+          font-size: 12px;
           color: #909399;
         }
       }
@@ -462,9 +645,9 @@ onMounted(() => {
 
   /* 折线图卡片 */
   .chart-card {
-    margin-top: 20px;
+    margin-top: 12px; // 减少上边距
     transition: all 0.3s ease;
-    height: 280px; // 整个卡片高度280px
+    height: 240px; // 减小卡片高度
 
     &:hover {
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -475,13 +658,13 @@ onMounted(() => {
       height: 100%;
       display: flex;
       flex-direction: column;
-      padding: 20px;
+      padding: 16px; // 减少内边距
     }
 
     /* 图表标题区域 */
     .chart-header {
-      margin-bottom: 12px;
-      padding-bottom: 10px;
+      margin-bottom: 10px; // 减少间距
+      padding-bottom: 8px;
       border-bottom: 2px solid #e4e7ed;
       flex-shrink: 0; // 防止标题区域被压缩
     }
@@ -489,7 +672,7 @@ onMounted(() => {
     /* 图表标题文字 */
     .chart-title {
       margin: 0;
-      font-size: 16px;
+      font-size: 15px; // 减小字体
       font-weight: 600;
       color: #303133;
     }
@@ -499,6 +682,54 @@ onMounted(() => {
       width: 100%;
       flex: 1; // 自动填充剩余空间
       min-height: 0; // 确保能够正确缩小
+    }
+  }
+
+  /* 底部图表区域 */
+  .graph {
+    margin-top: 12px; // 减少上边距
+    display: flex;
+    gap: 12px; // 减少卡片间距
+
+    /* 图表卡片 */
+    .graph-card {
+      flex: 1;
+      transition: all 0.3s ease;
+      height: 300px; // 固定高度
+
+      &:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+
+      /* 卡片内容区域 */
+      :deep(.el-card__body) {
+        padding: 16px; // 减少内边距
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* 图表标题区域 */
+      .chart-header {
+        margin-bottom: 12px;
+        padding-bottom: 8px;
+        border-bottom: 2px solid #e4e7ed;
+        flex-shrink: 0;
+      }
+
+      /* 图表标题文字 */
+      .chart-title {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 600;
+        color: #303133;
+      }
+
+      /* 图表容器 */
+      .graph-chart-container {
+        flex: 1;
+        min-height: 0;
+      }
     }
   }
 }

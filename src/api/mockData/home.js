@@ -48,6 +48,7 @@ export default {
       },
     }
   },
+
   getCountData: () => {
     return {
       code: 200,
@@ -91,6 +92,7 @@ export default {
       ],
     }
   },
+
   getChartData: () => {
     return {
       code: 200,
