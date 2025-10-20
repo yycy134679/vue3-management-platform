@@ -62,13 +62,22 @@
           </div>
         </el-card>
       </div>
+
+      <!-- 折线图 -->
+      <el-card shadow="hover" class="chart-card">
+        <div class="chart-header">
+          <h3 class="chart-title">品牌订单统计</h3>
+        </div>
+        <div ref="orderChartRef" class="chart-container"></div>
+      </el-card>
     </el-col>
   </el-row>
 </template>
 
 <script setup>
-import { ref, onMounted, getCurrentInstance } from 'vue'
+import { ref, onMounted, getCurrentInstance, nextTick } from 'vue'
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
+import * as echarts from 'echarts'
 
 // 数据
 
@@ -77,6 +86,8 @@ const { proxy } = getCurrentInstance()
 // 表格数据
 const tableData = ref([])
 const countData = ref([])
+const orderChartRef = ref(null)
+let orderChart = null
 
 // 表格列标签
 const tableLabel = ref({
@@ -113,9 +124,117 @@ const getCountData = async () => {
   countData.value = data
 }
 
+// 初始化折线图
+const initOrderChart = async () => {
+  const chartData = await proxy.$api.home.getChartData()
+  console.log('获取到的图表数据:', chartData) // 调试日志
+
+  await nextTick()
+
+  if (!orderChartRef.value) return
+
+  // 销毁旧的图表实例
+  if (orderChart) {
+    orderChart.dispose()
+  }
+
+  // 创建新的图表实例
+  orderChart = echarts.init(orderChartRef.value)
+
+  const { date, data } = chartData.orderData
+
+  // 获取所有品牌名称
+  const brands = Object.keys(data[0])
+
+  // 生成系列数据
+  const series = brands.map((brand) => ({
+    name: brand,
+    type: 'line',
+    smooth: false, // 使用折线而不是平滑曲线
+    data: data.map((item) => item[brand]),
+  }))
+
+  const option = {
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: {
+        type: 'cross',
+        label: {
+          backgroundColor: '#6a7985',
+        },
+      },
+      // 自定义 tooltip 显示内容
+      formatter: (params) => {
+        const dateIndex = params[0].dataIndex
+        let html = `<div style="font-weight: 600; margin-bottom: 8px;">${date[dateIndex]}</div>`
+        params.forEach((param) => {
+          html += `
+            <div style="display: flex; align-items: center; margin: 4px 0;">
+              <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background-color: ${param.color}; margin-right: 8px;"></span>
+              <span style="flex: 1;">${param.seriesName}:</span>
+              <span style="font-weight: 600; margin-left: 20px;">${param.value}</span>
+            </div>
+          `
+        })
+        return html
+      },
+    },
+    legend: {
+      data: brands,
+      top: 0, // 品牌标签放在头部
+      textStyle: {
+        fontSize: 13,
+      },
+    },
+    grid: {
+      left: '3%',
+      right: '4%',
+      bottom: '3%',
+      top: '50px', // 为头部标签留出空间
+      containLabel: true,
+    },
+    xAxis: {
+      type: 'category',
+      boundaryGap: false,
+      data: date,
+      axisLabel: {
+        fontSize: 12,
+        color: '#606266',
+      },
+      axisLine: {
+        lineStyle: {
+          color: '#e4e7ed',
+        },
+      },
+    },
+    yAxis: {
+      type: 'value',
+      axisLabel: {
+        fontSize: 12,
+        color: '#606266',
+      },
+      splitLine: {
+        lineStyle: {
+          color: '#e4e7ed',
+          type: 'dashed',
+        },
+      },
+    },
+    series: series,
+  }
+
+  orderChart.setOption(option)
+
+  // 响应式调整
+  window.addEventListener('resize', () => {
+    orderChart?.resize()
+  })
+}
+
 onMounted(() => {
   getTableData()
   getCountData()
+  initOrderChart()
 })
 </script>
 
@@ -289,7 +408,7 @@ onMounted(() => {
 
     /* 单个统计卡片 */
     .count-card {
-      width: calc(33.33% - 14px); // 每行3个卡片，减去间距
+      width: calc(33.33% - 14px); // 每行3个卡片,减去间距
       cursor: pointer;
       transition: all 0.3s ease;
 
@@ -338,6 +457,48 @@ onMounted(() => {
           color: #909399;
         }
       }
+    }
+  }
+
+  /* 折线图卡片 */
+  .chart-card {
+    margin-top: 20px;
+    transition: all 0.3s ease;
+    height: 280px; // 整个卡片高度280px
+
+    &:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    /* 卡片内容区域 */
+    :deep(.el-card__body) {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+    }
+
+    /* 图表标题区域 */
+    .chart-header {
+      margin-bottom: 12px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #e4e7ed;
+      flex-shrink: 0; // 防止标题区域被压缩
+    }
+
+    /* 图表标题文字 */
+    .chart-title {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 600;
+      color: #303133;
+    }
+
+    /* 图表容器 */
+    .chart-container {
+      width: 100%;
+      flex: 1; // 自动填充剩余空间
+      min-height: 0; // 确保能够正确缩小
     }
   }
 }
