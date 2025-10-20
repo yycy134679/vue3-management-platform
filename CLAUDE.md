@@ -1,3 +1,7 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
 ## 项目概述
 
 这是一个基于 Vue 3 + Vite + Element Plus 的后台管理平台项目。
