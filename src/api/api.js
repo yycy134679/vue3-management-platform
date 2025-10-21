@@ -33,10 +33,11 @@ export default {
     // },
   },
   user: {
-    getUserList() {
+    getUserList(params) {
       return request({
         url: '/user/getUserList',
         method: 'get',
+        data: params,
       })
     },
   },
