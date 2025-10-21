@@ -13,13 +13,14 @@
   <!-- 用户信息表格 -->
   <div class="user-tabale">
     <el-table :data="tableData" style="width: 100%">
-      <el-table-column fixed prop="date" label="Date" width="150" />
-      <el-table-column prop="name" label="Name" width="120" />
-      <el-table-column prop="state" label="State" width="120" />
-      <el-table-column prop="city" label="City" width="120" />
-      <el-table-column prop="address" label="Address" width="400" />
-      <el-table-column prop="zip" label="Zip" width="120" />
-      <el-table-column fixed="right" label="Operations" min-width="120">
+      <el-table-column
+        v-for="item in tableLable"
+        :key="item.prop"
+        :prop="item.prop"
+        :label="item.label"
+        :width="item.width || 150"
+      />
+      <el-table-column fixed="right" label="操作" min-width="120">
         <template #default>
           <el-button type="primary" size="small" @click="handleClick"> 编辑 </el-button>
           <el-button type="danger" size="small">删除</el-button>
@@ -36,49 +37,19 @@ const handleClick = () => {
   console.log('click')
 }
 
-const tableData = [
-  {
-    date: '2016-05-03',
-    name: 'Tom',
-    state: 'California',
-    city: 'Los Angeles',
-    address: 'No. 189, Grove St, Los Angeles',
-    zip: 'CA 90036',
-    tag: 'Home',
-  },
-  {
-    date: '2016-05-02',
-    name: 'Tom',
-    state: 'California',
-    city: 'Los Angeles',
-    address: 'No. 189, Grove St, Los Angeles',
-    zip: 'CA 90036',
-    tag: 'Office',
-  },
-  {
-    date: '2016-05-04',
-    name: 'Tom',
-    state: 'California',
-    city: 'Los Angeles',
-    address: 'No. 189, Grove St, Los Angeles',
-    zip: 'CA 90036',
-    tag: 'Home',
-  },
-  {
-    date: '2016-05-01',
-    name: 'Tom',
-    state: 'California',
-    city: 'Los Angeles',
-    address: 'No. 189, Grove St, Los Angeles',
-    zip: 'CA 90036',
-    tag: 'Office',
-  },
-]
+const tableData = ref([])
 
 const { proxy } = getCurrentInstance()
 const getUserData = async () => {
-  const data = await proxy.$api.user.getUserList()
-  console.log(data)
+  const res = await proxy.$api.user.getUserList()
+  console.log(res)
+  if (res.code === 200) {
+    // 处理性别字段：0-女，1-男
+    tableData.value = res.data.list.map((item) => ({
+      ...item,
+      sexLabel: item.sex === 0 ? '女' : '男',
+    }))
+  }
 }
 
 onMounted(() => {
@@ -94,7 +65,20 @@ const tableLable = reactive([
     prop: 'age',
     label: '年龄',
   },
-  {},
+  {
+    prop: 'addr',
+    label: '地址',
+    width: '200',
+  },
+  {
+    prop: 'birth',
+    label: '出生日期',
+    width: '200',
+  },
+  {
+    prop: 'sexLabel',
+    label: '性别',
+  },
 ])
 </script>
 
