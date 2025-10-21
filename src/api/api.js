@@ -25,5 +25,19 @@ export default {
         method: 'get',
       })
     },
+    // getUserData() {
+    //   return request({
+    //     url: '/home/getUserData',
+    //     method: 'get',
+    //   })
+    // },
+  },
+  user: {
+    getUserList() {
+      return request({
+        url: '/user/getUserList',
+        method: 'get',
+      })
+    },
   },
 }
