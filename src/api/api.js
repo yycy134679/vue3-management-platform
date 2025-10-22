@@ -40,5 +40,12 @@ export default {
         data: params,
       })
     },
+    deleteUser(params) {
+      return request({
+        url: '/user/deleteUser',
+        method: 'get',
+        data: params,
+      })
+    },
   },
 }

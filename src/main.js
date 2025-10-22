@@ -6,6 +6,8 @@ import App from './App.vue'
 import router from './router'
 // 全局样式
 import '@/assets/less/index.less'
+// Element Plus 样式（确保包含 MessageBox/Message 等服务样式）
+import 'element-plus/dist/index.css'
 // Mock 数据（开发环境）
 import '@/api/mock.js'
 // API 管理对象

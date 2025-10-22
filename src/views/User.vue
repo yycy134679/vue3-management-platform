@@ -26,9 +26,9 @@
         :width="item.width || 150"
       />
       <el-table-column fixed="right" label="操作" min-width="120">
-        <template #default>
+        <template #default="{ row }">
           <el-button type="primary" size="small" @click="handleClick"> 编辑 </el-button>
-          <el-button type="danger" size="small">删除</el-button>
+          <el-button type="danger" size="small" @click="handleDelete(row)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -47,6 +47,8 @@
 
 <script setup>
 import { ref, getCurrentInstance, onMounted, reactive } from 'vue'
+// 引入element-plus的Message组件
+import { ElMessage, ElMessageBox } from 'element-plus'
 
 const handleClick = () => {
   console.log('click')
@@ -96,6 +98,7 @@ const handlePageChange = (page) => {
   getUserData(name ? { name } : {})
 }
 
+// 表格列配置
 const tableLable = reactive([
   {
     prop: 'name',
@@ -120,6 +123,34 @@ const tableLable = reactive([
     label: '性别',
   },
 ])
+
+// 删除用户
+const handleDelete = async (row) => {
+  // 调试：验证点击是否触发，以及行数据是否正常
+  // eslint-disable-next-line no-console
+  console.log('[User] handleDelete click -> row:', row)
+  try {
+    await ElMessageBox.confirm(`是否确认删除用户【${row.name}】？`, '提示', {
+      type: 'warning',
+      confirmButtonText: '确认',
+      cancelButtonText: '取消',
+    })
+    // 调用删除接口
+    const resp = await proxy.$api.user.deleteUser({ id: row.id })
+    // eslint-disable-next-line no-console
+    console.log('[User] deleteUser resp:', resp)
+    ElMessage.success('删除成功')
+    // 若当前页仅剩一条被删，且页码大于1，则回退一页
+    if (tableData.value.length === 1 && currentPage.value > 1) {
+      currentPage.value = currentPage.value - 1
+    }
+    // 保持搜索条件刷新
+    const name = searchName.value?.trim()
+    await getUserData(name ? { name } : {})
+  } catch (err) {
+    // 用户取消或发生错误时无需处理
+  }
+}
 </script>
 
 <style scoped lang="less">
